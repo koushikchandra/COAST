@@ -1,0 +1,46 @@
+% COAST -- WACV 2027 Evaluations & Datasets track draft
+\documentclass[10pt,twocolumn,letterpaper]{article}
+\usepackage[review]{wacv}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,multirow,makecell}
+\usepackage{xcolor}
+\usepackage[pagebackref,breaklinks,colorlinks]{hyperref}
+
+\def\paperID{****}
+\def\confName{WACV}
+\def\confYear{2027}
+\newcommand{\coast}{\textsc{COAST}}
+\newcommand{\method}[1]{\textsc{#1}}
+\newcommand{\pending}[1]{\textcolor{red}{[#1]}}
+
+\begin{document}
+\title{COAST: A Cross-Organ Benchmark and Conditioning Study for\\
+Histology-to-Transcriptomics Prediction}
+\author{Anonymous WACV submission\\Paper ID \paperID}
+\maketitle
+
+\input{sections/abstract}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/coast_overview.pdf}
+\caption{\textbf{The COAST contribution.} (A) Patient-disjoint POOLED and organ-held-out LOOO
+evaluation use gene panels ranked only on training data. (B) The same inference-available global/local
+morphology intervention is tested against each backbone's unconditioned version. (C) It improves all
+six representative backbones shown in the main study. The appendix reports the complete screening,
+including neutral and negative cases.}
+\label{fig:overview}
+\end{figure*}
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/protocol}
+\input{sections/baselines}
+\input{sections/results}
+\input{sections/discussion}
+
+{\footnotesize
+\setlength{\bibsep}{3.2pt plus 0.3ex}
+\bibliographystyle{ieeenat_fullname}
+\bibliography{references}
+}
+\end{document}

@@ -1,0 +1,49 @@
+\section{Introduction: the missing test}
+\label{sec:intro}
+Spatial transcriptomics (ST) shows where genes are expressed inside tissue~\cite{spatialtx,xenium}.
+It is informative but expensive. H\&E slides are routine and much cheaper, so many methods now try to
+predict spatial expression directly from histology. They use regression, transformers, spatial graphs,
+retrieval, multi-resolution features, or generative models
+~\cite{stnet,histogene,hist2st,bleep,triplex,stflow}.
+
+The usual test holds out a patient but keeps the organ the same. A breast test slide, for example, is
+predicted by a model that has already seen other breast slides. This measures performance on a new
+patient, but not on new tissue. Our question is simple: \emph{what happens when the test organ was never
+seen during training?} This matters because paired ST data are scarce and uneven across organs.
+
+This test is easy to get wrong. If genes are selected using all slides, the test organ influences what
+is evaluated. If genes are correctly selected from training slides only, some may be almost silent in
+the new organ. Pearson correlation then has little variation to measure. A low score can reflect model
+error, a mismatched gene panel, or both. Reporting only one average hides this distinction.
+
+We introduce \coast{} (\textbf{C}ross-\textbf{O}rgan \textbf{A}ssessment of \textbf{S}patial
+\textbf{T}ranscriptomics prediction). It separates new-patient prediction (POOLED) from new-organ
+transfer (LOOO), selects genes from training data only, and reports detectability and target variance
+beside accuracy. We apply it to HEST-1k~\cite{hest} and STImage-1K4M~\cite{stimage}. Every method uses
+the same frozen UNI image features~\cite{uni}, allowing us to compare predictors rather than encoders.
+Figure~\ref{fig:overview} summarizes the split, the shared intervention, and the main result.
+
+We ask four questions:
+\begin{enumerate}
+  \item How much performance is lost when the test organ is unseen?
+  \item Do model rankings change between new-patient and new-organ evaluation?
+  \item When does Pearson correlation stop separating models reliably?
+  \item Does the same morphology conditioner help different architectures?
+\end{enumerate}
+
+The fourth question makes the benchmark diagnostic, not only descriptive. In the main conditioning
+study, FiLM improves six representative regression and spatial backbones in both regimes, including
+a recent multi-level Gene-DML-style predictor. The
+appendix reports the complete architecture screening, including cases where the intervention is neutral
+or harmful. This gives a clear result: morphology conditioning often helps, but its value depends on
+the prediction architecture.
+
+Our contributions are:
+\begin{itemize}
+  \item \textbf{A clean cross-organ test:} patient-disjoint POOLED and LOOO splits, genes ranked on
+  training data only, equal weighting of organs, and released evaluation artifacts.
+  \item \textbf{A metric diagnosis:} low gene detection and target variance identify cases where
+  Pearson correlation cannot meaningfully separate models.
+  \item \textbf{A controlled intervention:} the same morphology conditioner improves six
+  representative architectures in both regimes; complete screening is reported in the appendix.
+\end{itemize}

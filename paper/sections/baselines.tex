@@ -1,0 +1,69 @@
+\section{Models and the shared FiLM intervention}
+\label{sec:models}
+The paper contains two linked studies. The \emph{benchmark study} compares representative predictors
+under identical COAST inputs. The \emph{conditioning study} changes one factor inside each predictor:
+whether global or local morphology is injected through FiLM. Keeping these studies separate prevents
+a strong backbone from being mistaken for evidence that conditioning itself works.
+
+\subsection{Give every method the same inputs}
+Every method receives identical frozen 1024-dimensional UNI patch features, coordinates, fold-specific
+panels, and normalized targets. The main paper evaluates linear ridge and random-forest probes;
+ST-Net, DeepSpaCE, an MLP probe, HisToGene, Hist2ST, a Gene-DML-style multi-level predictor,
+and the whole-slide STFlow generator. This covers
+spot-independent regression, slide transformers, graph/spatial models, and generative prediction.
+The appendix contains the complete screening table, including retrieval and multi-resolution models.
+Training budgets and validation rules are matched where model
+interfaces permit; all deviations are disclosed rather than silently harmonized.
+
+\subsection{Change one factor: morphology conditioning}
+Organ labels are unavailable for a novel organ as learned categories. We therefore test whether
+continuous histology, which remains available at inference, is a better adaptation signal. We insert
+the same zero-initialized FiLM principle into ST-Net, DeepSpaCE, HisToGene, Hist2ST, an MLP probe,
+and the Gene-DML-style predictor,
+comparing each model only with its own matched unconditioned version. The
+\emph{global} intervention uses the masked slide mean; the \emph{local} intervention also uses the
+mean feature in each spot's spatial neighborhood. Results for additional architectures are retained
+in the appendix to make the full screening record visible.
+
+Before comparing results, we classify each backbone by the context already used in its original
+prediction path (Table~\ref{tab:context}). This supports a predeclared question: does FiLM help most
+when a backbone does not already aggregate both neighborhood and slide context? The taxonomy is based
+on architecture, not observed performance.
+
+\begin{table}[t]
+\centering\small
+\setlength{\tabcolsep}{3.5pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lccc}
+\toprule
+Backbone & Spot & Neighborhood & Slide/global\\
+\midrule
+ST-Net / DeepSpaCE / MLP & yes & no & no\\
+HisToGene & yes & limited & yes\\
+Hist2ST & yes & yes & limited\\
+Gene-DML-style & yes & yes & yes\\
+STFlow & yes & yes & input only\\
+\bottomrule
+\end{tabular}
+}
+\caption{Context used by each original prediction path. The taxonomy is defined independently of
+the FiLM results.}
+\label{tab:context}
+\end{table}
+
+For the geometric STFlow reference, an adaLN-Zero head in each transformer block maps an invariant conditioner $\mathbf c$
+to shift, scale, and residual gate parameters:
+\begin{equation}
+\tilde{\mathbf h}=\mathbf h\odot(1+\gamma(\mathbf c))+\beta(\mathbf c),\qquad
+\mathbf h' = \mathbf h+a(\mathbf c)\odot F(\tilde{\mathbf h}).
+\end{equation}
+The heads are zero-initialized. The global variant uses the masked mean of slide patch features. The
+local variant adds, for each spot, the mean feature among its spatial $k$ nearest neighbors. Both
+conditioners are invariant to coordinate rotation and translation. Modulation acts only on STFlow's
+invariant scalar stream and gates the output of geometric attention; it never modifies frame or edge
+geometry. A numerical transformation test verifies prediction differences below $10^{-6}$.
+
+For every backbone, the controlled comparison is conditioned versus unconditioned training with identical
+features, folds, objectives, seeds, and optimization budgets. Parameter-matched unconditioned controls
+separate conditioning information from added capacity. The larger-capacity STFlow model from
+exploratory experiments is not a headline method and is reported only as a secondary scaling analysis.

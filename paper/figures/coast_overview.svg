@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="760" viewBox="0 0 1500 760">
+<defs>
+  <style>
+    .title{font:700 27px Arial,sans-serif;fill:#16263d}.panel{font:700 25px Arial,sans-serif;fill:#fff}
+    .h{font:700 22px Arial,sans-serif;fill:#16263d}.b{font:18px Arial,sans-serif;fill:#26384f}
+    .s{font:16px Arial,sans-serif;fill:#42546a}.tiny{font:14px Arial,sans-serif;fill:#42546a}
+    .num{font:700 16px Arial,sans-serif}.box{fill:#fff;stroke:#9fb1c5;stroke-width:2}
+    .arrow{stroke:#536b87;stroke-width:3;fill:none;marker-end:url(#arrow)}
+  </style>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#536b87"/></marker>
+  <linearGradient id="head" x1="0" x2="1"><stop stop-color="#174a7e"/><stop offset="1" stop-color="#2877a8"/></linearGradient>
+</defs>
+<rect width="1500" height="760" fill="#f5f8fb"/>
+<text x="750" y="42" text-anchor="middle" class="title">COAST: leakage-aware evaluation + a controlled morphology-conditioning intervention</text>
+
+<!-- panels -->
+<rect x="28" y="70" width="454" height="650" rx="18" fill="#fff" stroke="#c5d2df" stroke-width="2"/>
+<rect x="523" y="70" width="454" height="650" rx="18" fill="#fff" stroke="#c5d2df" stroke-width="2"/>
+<rect x="1018" y="70" width="454" height="650" rx="18" fill="#fff" stroke="#c5d2df" stroke-width="2"/>
+<path d="M28 88 Q28 70 46 70 H464 Q482 70 482 88 V128 H28Z" fill="#174a7e"/>
+<path d="M523 88 Q523 70 541 70 H959 Q977 70 977 88 V128 H523Z" fill="#174a7e"/>
+<path d="M1018 88 Q1018 70 1036 70 H1454 Q1472 70 1472 88 V128 H1018Z" fill="#174a7e"/>
+<text x="255" y="108" text-anchor="middle" class="panel">A. Leakage-aware organ shift</text>
+<text x="750" y="108" text-anchor="middle" class="panel">B. Same intervention</text>
+<text x="1245" y="108" text-anchor="middle" class="panel">C. What COAST reveals</text>
+
+<!-- A -->
+<text x="255" y="162" text-anchor="middle" class="h">Training side only</text>
+<g transform="translate(61 186)">
+ <rect class="box" width="86" height="54" rx="9" fill="#e7f0fa"/><rect class="box" x="96" width="86" height="54" rx="9" fill="#e7f0fa"/>
+ <rect class="box" x="192" width="86" height="54" rx="9" fill="#e7f0fa"/><rect class="box" x="288" width="86" height="54" rx="9" fill="#e7f0fa"/>
+ <text x="43" y="33" text-anchor="middle" class="s">Kidney</text><text x="139" y="33" text-anchor="middle" class="s">Breast</text>
+ <text x="235" y="33" text-anchor="middle" class="s">Lung</text><text x="331" y="33" text-anchor="middle" class="s">Skin</text>
+</g>
+<path d="M255 247 V289" class="arrow"/><rect x="103" y="292" width="304" height="70" rx="12" fill="#fff7dc" stroke="#d9b64b" stroke-width="2"/>
+<text x="255" y="319" text-anchor="middle" class="h">Rank genes on training data</text><text x="255" y="345" text-anchor="middle" class="s">freeze the 50-gene panel</text>
+<path d="M255 364 V405" class="arrow"/>
+<rect x="73" y="408" width="364" height="91" rx="12" fill="#fdebec" stroke="#cf6670" stroke-width="2"/>
+<text x="255" y="439" text-anchor="middle" class="h">LOOO: unseen organ</text><text x="255" y="468" text-anchor="middle" class="b">Liver never enters training,</text><text x="255" y="490" text-anchor="middle" class="b">panel ranking, or model selection</text>
+<rect x="73" y="526" width="364" height="91" rx="12" fill="#e9f5ee" stroke="#51a474" stroke-width="2"/>
+<text x="255" y="557" text-anchor="middle" class="h">POOLED: unseen patients</text><text x="255" y="586" text-anchor="middle" class="b">organs are known; patients</text><text x="255" y="608" text-anchor="middle" class="b">remain strictly disjoint</text>
+<text x="255" y="670" text-anchor="middle" class="s">Two regimes answer different questions</text>
+
+<!-- B -->
+<rect x="557" y="158" width="144" height="76" rx="12" fill="#efe7f8" stroke="#8a69ad" stroke-width="2"/>
+<text x="629" y="190" text-anchor="middle" class="h">H&amp;E features</text><text x="629" y="216" text-anchor="middle" class="s">frozen UNI</text>
+<path d="M703 196 H746" class="arrow"/>
+<rect x="750" y="150" width="190" height="92" rx="12" fill="#e7f0fa" stroke="#4d82b4" stroke-width="2"/>
+<text x="845" y="179" text-anchor="middle" class="h">Morphology</text><text x="845" y="205" text-anchor="middle" class="s">global slide mean</text><text x="845" y="227" text-anchor="middle" class="s">+ local neighbor mean</text>
+<path d="M845 244 V284" class="arrow"/>
+<rect x="621" y="287" width="258" height="95" rx="13" fill="#fff3e5" stroke="#df8a36" stroke-width="3"/>
+<text x="750" y="316" text-anchor="middle" class="h">FiLM / adaLN-Zero</text><text x="750" y="344" text-anchor="middle" class="b">h′ = h ⊙ (1 + γ) + β</text><text x="750" y="368" text-anchor="middle" class="s">re-inject morphology per layer</text>
+<path d="M750 384 V421" class="arrow"/>
+<text x="750" y="450" text-anchor="middle" class="h">Matched on/off test across backbones</text>
+<g transform="translate(558 470)">
+ <rect width="112" height="48" rx="8" fill="#fff" stroke="#9fb1c5" stroke-width="2"/><rect x="122" width="112" height="48" rx="8" fill="#fff" stroke="#9fb1c5" stroke-width="2"/><rect x="244" width="112" height="48" rx="8" fill="#fff" stroke="#9fb1c5" stroke-width="2"/>
+ <text x="56" y="30" text-anchor="middle" class="s">ST-Net</text><text x="178" y="30" text-anchor="middle" class="s">DeepSpaCE</text><text x="300" y="30" text-anchor="middle" class="s">HisToGene</text>
+ <rect y="58" width="112" height="48" rx="8" fill="#fff" stroke="#9fb1c5" stroke-width="2"/><rect x="122" y="58" width="112" height="48" rx="8" fill="#fff" stroke="#9fb1c5" stroke-width="2"/><rect x="244" y="58" width="112" height="48" rx="8" fill="#fff" stroke="#9fb1c5" stroke-width="2"/>
+ <text x="56" y="88" text-anchor="middle" class="s">Hist2ST</text><text x="178" y="88" text-anchor="middle" class="s">MLP probe</text><text x="300" y="88" text-anchor="middle" class="s">STFlow</text>
+</g>
+<text x="750" y="672" text-anchor="middle" class="s">Same folds • features • seeds • training budget</text>
+
+<!-- C bars -->
+<text x="1245" y="162" text-anchor="middle" class="h">LOOO Δ Pearson (best FiLM variant)</text>
+<line x1="1210" y1="190" x2="1210" y2="555" stroke="#8999aa" stroke-width="2"/>
+<g class="s">
+ <text x="1192" y="220" text-anchor="end">ST-Net</text><rect x="1210" y="202" width="190" height="23" rx="3" fill="#45a16c"/><text x="1407" y="220" class="num" fill="#287148">+.038</text>
+ <text x="1192" y="270" text-anchor="end">DeepSpaCE</text><rect x="1210" y="252" width="76" height="23" rx="3" fill="#45a16c"/><text x="1293" y="270" class="num" fill="#287148">+.015</text>
+ <text x="1192" y="320" text-anchor="end">HisToGene</text><rect x="1210" y="302" width="71" height="23" rx="3" fill="#45a16c"/><text x="1288" y="320" class="num" fill="#287148">+.014</text>
+ <text x="1192" y="370" text-anchor="end">MLP probe</text><rect x="1210" y="352" width="30" height="23" rx="3" fill="#65b887"/><text x="1247" y="370" class="num" fill="#287148">+.006</text>
+ <text x="1192" y="420" text-anchor="end">Hist2ST</text><rect x="1210" y="402" width="29" height="23" rx="3" fill="#65b887"/><text x="1246" y="420" class="num" fill="#287148">+.006</text>
+ <text x="1192" y="470" text-anchor="end">Gene-DML</text><rect x="1210" y="452" width="35" height="23" rx="3" fill="#65b887"/><text x="1252" y="470" class="num" fill="#287148">+.007</text>
+</g>
+<rect x="1052" y="576" width="386" height="102" rx="13" fill="#eef5fb" stroke="#77a3c8" stroke-width="2"/>
+<text x="1245" y="609" text-anchor="middle" class="h">Main finding</text>
+<text x="1245" y="638" text-anchor="middle" class="b">FiLM improves all 6 main backbones;</text>
+<text x="1245" y="663" text-anchor="middle" class="b">full screening is in the appendix.</text>
+</svg>

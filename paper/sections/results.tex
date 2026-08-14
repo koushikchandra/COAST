@@ -1,0 +1,157 @@
+\section{Results: four simple questions}
+\label{sec:results}
+\paragraph{Status of numerical results.}
+Tables~\ref{tab:main}--\ref{tab:floor} preserve the current three-seed measurements as
+\emph{preliminary values}. They were produced with held-out-score checkpoint selection and therefore
+must be replaced by validation-selected results before submission. They are retained in this working
+draft to fix the intended analyses and prevent the narrative from being tailored after rerunning.
+
+\subsection{Q1--Q2: unseen organs are harder and change rankings}
+Across all competitive methods, HEST LOOO scores are far below POOLED scores (Table~\ref{tab:main}).
+The gap is not explained by a single architecture: it appears for regression, transformer, spatial,
+and generative approaches. Model rankings also differ across regimes and datasets. This supports
+reporting the two regimes separately rather than treating
+pooled patient generalization as evidence of organ transfer.
+
+The size of the gap is itself a benchmark result. For the strongest rows in Table~\ref{tab:main},
+POOLED PCC is near $0.79$, whereas LOOO PCC is near $0.46$. A model can therefore look reliable on
+new patients from known organs while losing roughly $0.33$ correlation when the organ changes. COAST
+makes this deployment gap visible rather than averaging it away.
+
+\begin{table}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lcc}
+\toprule
+Method & HEST LOOO & HEST POOLED\\
+\midrule
+Ridge (UNI) & 0.4046 & 0.7302\\
+Random forest (UNI) & 0.3749 & 0.7158\\
+ST-Net~\cite{stnet} & 0.3595 & 0.4169\\
+HisToGene~\cite{histogene} & 0.4379 & 0.7766\\
+Hist2ST~\cite{hist2st} & 0.4087 & 0.7689\\
+Gene-DML-style~\cite{genedml}$^\dagger$ & 0.4527 & 0.7856\\
+\midrule
+STFlow~\cite{stflow} & 0.4477 & 0.7853\\
+STFlow + global morphology & 0.4590 & 0.7937\\
+STFlow + local morphology & \textbf{0.4624} & \textbf{0.7950}\\
+\bottomrule
+\end{tabular}
+}
+\caption{Preliminary macro Pearson results (three-seed mean). Replace with validation-selected scores
+and 95\% confidence intervals before submission. Bold denotes the best reference-model value, not a
+claim of universal state of the art. $^\dagger$Feature-matched COAST adaptation; LOOO uses two
+completed seeds and POOLED uses three.}
+\label{tab:main}
+\end{table}
+
+\begin{table}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lcc}
+\toprule
+Method & STImage LOOO & STImage POOLED\\
+\midrule
+ST-Net & 0.0891 & 0.2944\\
+HisToGene & 0.1267 & 0.7292\\
+Hist2ST & 0.1421 & 0.7368\\
+STFlow & 0.1224 & 0.7115\\
+STFlow + global morphology & 0.1283 & 0.7201\\
+STFlow + local morphology & 0.1295 & 0.7203\\
+\bottomrule
+\end{tabular}
+}
+\caption{Preliminary results on STImage-1K4M. Conditioning improves the fixed STFlow backbone. The
+complete model table is provided in the appendix.}
+\label{tab:stimage}
+\end{table}
+
+\subsection{Q3: Pearson fails when genes are nearly silent}
+HEST organs with the lowest PCC also have substantially lower target variance and detection
+(Table~\ref{tab:floor}). The counterexample to a sample-size explanation is useful: kidney and
+prostate have the most slides yet score poorly, whereas lung and skin have two slides each but high
+PCC. The appropriate conclusion is limited: sparse, low-variance targets substantially restrict the
+interpretability of PCC; they do not prove that the models themselves are adequate.
+
+\begin{table}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrr}
+\toprule
+Held-out organ & PCC & Median variance & Spots $>0$\\
+\midrule
+Skin & 0.78 & 1.47 & 40\%\\
+Colorectal & 0.72 & 1.14 & 74\%\\
+Lung & 0.68 & 1.30 & 61\%\\
+Pancreas & 0.60 & 0.97 & 58\%\\
+Breast & 0.56 & 0.88 & 57\%\\
+Kidney & 0.15 & 0.071 & 11\%\\
+Liver & 0.04 & 0.030 & 6\%\\
+Prostate & 0.13 & 0.007 & 1\%\\
+\bottomrule
+\end{tabular}
+\caption{Preliminary per-organ diagnostics for the local reference. Low Pearson correlation co-occurs
+with low target variance and sparse detection.}
+\label{tab:floor}
+\end{table}
+
+At a predeclared 10\% detection threshold, preliminary HEST LOOO PCC rises from 0.4477 to 0.4789
+for STFlow and from 0.4624 to 0.4950 for the local reference. Because filtering uses held-out labels,
+this score is explicitly secondary and diagnostic; it must not be used for gene selection, checkpoint
+selection, or hyperparameter tuning. The final paper will report the full threshold-sensitivity curve
+and alternative metrics, not only the favorable threshold.
+
+\subsection{Q4: FiLM improves six representative backbones}
+Table~\ref{tab:film_general} applies morphology conditioning to six backbones. The best compatible
+conditioner improves all six in both LOOO and POOLED. In LOOO,
+the gains are largest for ST-Net ($+0.038$), DeepSpaCE ($+0.015$), and HisToGene ($+0.014$); a strong
+residual MLP probe also improves ($+0.006$, $p=0.032$), showing that the effect is not limited to weak
+models. Hist2ST improves modestly but does not reach significance. On the recent Gene-DML-style
+predictor, global conditioning improves LOOO PCC from .4527 to .4597 and POOLED PCC from .7856 to
+.7892. The appendix reports the complete eight-model screening, including neutral and negative
+results outside this main comparison.
+
+\begin{table*}[t]
+\centering\small
+\setlength{\tabcolsep}{4.2pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+& \multicolumn{4}{c}{LOOO} & \multicolumn{4}{c}{POOLED}\\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+Backbone & None & Global & Local & Best $\Delta$ & None & Global & Local & Best $\Delta$\\
+\midrule
+ST-Net & .3588 & .3493 & \textbf{.3969} & +.0380 & .4169 & .3286 & \textbf{.5886} & +.1717\\
+DeepSpaCE & .4521 & .4590 & \textbf{.4672} & +.0151 & .7834 & .7890 & \textbf{.7908} & +.0074\\
+HisToGene & .4384 & \textbf{.4526} & .4522 & +.0142 & .7775 & .7830 & \textbf{.7881} & +.0106\\
+Hist2ST & .4126 & .4147 & \textbf{.4183} & +.0057 & .7659 & .7697 & \textbf{.7702} & +.0043\\
+MLP probe & .4530 & \textbf{.4589} & .4588 & +.0059 & .7871 & .7878 & \textbf{.7930} & +.0059\\
+Gene-DML-style$^\dagger$ & .4527 & \textbf{.4597} & .4576 & +.0070 & .7856 & \textbf{.7892} & .7852 & +.0036\\
+\bottomrule
+\end{tabular}
+\caption{Preliminary cross-architecture conditioning intervention on HEST (three-seed means). Bold
+marks the best variant within each backbone and regime. Wilcoxon tests on paired fold--seed values for
+the best LOOO variant give $p<10^{-4}$ (ST-Net, DeepSpaCE), $p=0.0002$ (HisToGene), $p=0.074$
+(Hist2ST), and $p=0.032$ (MLP probe). Gene-DML significance testing awaits the missing seed reruns.
+$^\dagger$Feature-matched adaptation of Gene-DML~\cite{genedml}; the LOOO unconditioned and POOLED
+local cells contain two seeds, while all other Gene-DML cells contain three. Full screening statistics
+are provided in the appendix.
+These values require validation-selected confirmation before submission.}
+\label{tab:film_general}
+\end{table*}
+
+STFlow follows the same context-sensitive pattern: global and local conditioning improve it by
+$+0.011$--$0.015$ PCC in LOOO and $+0.008$--$0.010$ in POOLED. Local has the highest mean, but its
+difference from global conditioning is not significant. Together, the cross-backbone results support
+a narrower finding: repeated morphology injection tends to help models lacking explicit multi-scale
+context. The complete screening shows that this is not universal, so we present the relationship as
+an observed pattern and a testable design hypothesis rather than a general guarantee.
+
+\subsection{Required robustness analyses}
+Before submission we will populate the following preregistered analyses: (i) Spearman, NRMSE, MAE,
+and detection AP; (ii) patient/slide bootstrap intervals; (iii) parameter-matched conditioning
+controls; (iv) fixed-validation checkpoint selection; (v) macro versus micro aggregation; (vi)
+detection-threshold sensitivity; (vii) platform-stratified results; and (viii) qualitative H\&E,
+ground-truth, prediction, and error maps selected by a fixed rule. These are acceptance-critical
+components of the evaluation claim, not optional supplemental experiments.

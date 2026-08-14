@@ -1,0 +1,36 @@
+# Data and results — never commit
+results_*/
+dataset/
+embed_dataroot/
+weights_root/
+*.h5
+*.h5ad
+*.npz
+*.log
+*.npy
+
+# HuggingFace / Overleaf tokens
+.hf/
+.overleaf/
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.out
+*.toc
+*.brf
+*.synctex.gz
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# Editors
+.vscode/
+*.swp

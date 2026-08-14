@@ -1,0 +1,33 @@
+\section{Related Work}
+\label{sec:related}
+\paragraph{Histology-to-expression prediction.}
+ST-Net~\cite{stnet} predicts each spot with a CNN; HisToGene~\cite{histogene} and
+Hist2ST~\cite{hist2st} introduces spatial graphs, while STFlow~\cite{stflow} models the joint
+expression field with whole-slide flow matching. Contrastive retrieval and multi-resolution
+aggregation provide further comparison families~\cite{bleep,triplex}, reported in the appendix.
+These advances primarily optimize within-cohort accuracy. \coast{} is complementary: it holds image
+features, panels, partitions, and metrics fixed to examine conclusions under organ shift. Recent
+vision methods add multi-level discrimination (Gene-DML~\cite{genedml}) and fully connected,
+negative-aware spatial attention (FEAST~\cite{feast}). These context-rich designs are important tests
+for COAST because they may change both cross-organ rankings and the value of extra conditioning.
+
+\paragraph{Pathology representations and ST resources.}
+Foundation encoders transfer morphology across cohorts; examples include UNI~\cite{uni},
+Prov-GigaPath~\cite{gigapath}, CONCH~\cite{conch}, and Virchow~\cite{virchow}. We use frozen UNI
+features for every method rather than confounding evaluation with encoder choice. HEST-1k~\cite{hest}
+and STImage-1K4M~\cite{stimage} provide paired slides and expression across organs. We reorganize
+these resources around organ-held-out assessment rather than proposing a new biological dataset.
+
+\paragraph{Benchmarks for multimodal pathology.}
+Recent benchmarks study image--gene representation learning across organs, encoders, and downstream
+tasks~\cite{hescape}. COAST addresses a distinct evaluation gap in supervised expression prediction:
+the test organ is absent from training, target genes are selected without test expression, and model
+accuracy is interpreted together with target detectability. It further uses a shared conditioning
+intervention to compare how prediction architectures respond under the same shift.
+
+\paragraph{Evaluation under distribution shift.}
+Biomedical benchmarks can overstate generalization when patient, site, acquisition, label-selection,
+or preprocessing information crosses split boundaries. In histology-to-ST prediction, organ shift
+also changes the marginal distribution and detectability of the targets themselves. Our focus is
+therefore not only a stricter split, but an audit of how target shift interacts with the dominant
+correlation metric and with scientific conclusions.

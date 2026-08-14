@@ -1,0 +1,97 @@
+\section{COAST: a controlled cross-organ test}
+\label{sec:protocol}
+COAST follows three rules: the test organ cannot affect training or target selection; new patients
+and new organs must be reported separately; and accuracy must be accompanied by information about
+whether the target genes are measurable. These rules turn two public datasets into a reproducible
+stress test.
+
+Let a slide contain patch features $\mathbf Z\in\mathbb R^{N\times d}$, spot coordinates
+$\mathbf C\in\mathbb R^{N\times2}$, and expression $\mathbf Y\in\mathbb R^{N\times g}$. A model
+trained on organs $\mathcal O_{\rm tr}$ is evaluated on slides from either known organs or an organ
+$o\notin\mathcal O_{\rm tr}$. All slides from a patient remain in one partition.
+
+\subsection{Separate new patients from new organs}
+\paragraph{LOOO: unseen-organ transfer.}
+For each organ $o$, all cohorts and patients of $o$ are excluded from training and used only for the
+final test. Model selection uses a fixed validation partition drawn from the remaining organs; the
+test organ is not used for early stopping, hyperparameter selection, or threshold selection.
+
+\paragraph{POOLED: known-organ deployment.}
+All organs occur in training, but complete patients are held out within each organ. This evaluates a
+single multi-organ model on new patients without conflating that question with unseen-organ transfer.
+
+\begin{table}[t]
+\centering\small
+\setlength{\tabcolsep}{3.6pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lccc}
+\toprule
+Protocol & Patient held out & Organ held out & Primary question\\
+\midrule
+Within cohort & yes & no & in-distribution\\
+\coast{}-POOLED & yes & no & multi-organ deployment\\
+\coast{}-LOOO & yes & yes & organ transfer\\
+\bottomrule
+\end{tabular}
+}
+\caption{The protocols answer different questions and must be reported separately.}
+\label{tab:regimes}
+\end{table}
+
+\subsection{Choose genes without looking at the test organ}
+For fold $f$, we first form the technically compatible gene universe $A_f$ using assay annotations,
+without inspecting held-out expression. We then rank genes by pooled log-transformed variance on
+training slides only:
+\begin{equation}
+G_f=\operatorname{TopK}_{g\in A_f}
+\operatorname{Var}_{(s,i)\in D^{f}_{\rm tr}}
+\!\left[\log(1+Y_{sig})\right],\qquad K=50.
+\label{eq:panel}
+\end{equation}
+The selected $G_f$ is frozen before validation and test evaluation. We release both $A_f$ and $G_f$
+so that technical availability cannot be confused with expression-based selection. Clinically defined
+genes are reported as a separate, predeclared analysis rather than inserted after inspecting results.
+
+\subsection{Report when the target is measurable}
+The primary endpoint is macro-averaged gene-wise Pearson correlation: calculate correlation over
+spots for each nonconstant gene on each slide, average within slide, then give each organ equal weight.
+We additionally report Spearman correlation, normalized RMSE, MAE, and detection average precision.
+Micro (slide-weighted) means are secondary because HEST contains 2--24 slides per organ.
+
+For every organ we report the fraction of spots with nonzero expression, median target variance, and
+the number of evaluable genes. These are diagnostics, not inputs to the model. A detection-aware PCC
+restricted to genes satisfying a threshold $\tau$ is a predeclared secondary endpoint; $\tau$ is fixed
+without optimizing test performance and sensitivity is shown over several thresholds. Uncertainty is
+estimated by a patient/slide bootstrap nested within organ and by three training seeds.
+
+\subsection{Two complementary datasets}
+HEST comprises 72 slides grouped into eight organs and spans Visium and Xenium; the distribution is
+highly imbalanced. STImage-1K4M contributes 80 Visium slides, ten for each of eight organs, but its
+released slides are heavily downsampled. Table~\ref{tab:data} reports the evaluation units.
+
+\begin{table}[t]
+\centering\small
+\setlength{\tabcolsep}{3.5pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrr}
+\toprule
+Dataset / organ & Slides & Mean spots & Platform\\
+\midrule
+\multicolumn{4}{l}{\emph{HEST (72 slides)}}\\
+Breast / Kidney / Colorectal / Prostate & 8/24/8/23 & 6938/3092/3007/2727 & mixed/Vis./Vis./Vis.\\
+Lung / Pancreas / Liver / Skin & 2/3/2/2 & 2603/2524/2098/1517 & Xen./Xen./Vis./Xen.\\
+\midrule
+\multicolumn{4}{l}{\emph{STImage-1K4M (80 slides)}}\\
+8 organs & 10 each & 942--3605 & Visium\\
+\bottomrule
+\end{tabular}
+}
+\caption{Cross-organ evaluation resources. Exact patient-level partitions are released as machine-readable files.}
+\label{tab:data}
+\end{table}
+
+\subsection{Make every result traceable}
+Each reported cell is tied to a versioned split file, panel file, prediction file, and evaluation
+configuration. Code records patient identifiers after de-identification, training/validation/test
+membership, seed, checkpoint selected on validation only, preprocessing version, and metric policy.
+No test prediction is used to select a checkpoint or reporting threshold.

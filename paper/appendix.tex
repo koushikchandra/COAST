@@ -1,0 +1,72 @@
+% COAST supplementary appendix -- complete model screening
+\documentclass[10pt,twocolumn,letterpaper]{article}
+\usepackage[review]{wacv}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage[pagebackref,breaklinks,colorlinks]{hyperref}
+\def\paperID{****}
+\def\confName{WACV}
+\def\confYear{2027}
+\begin{document}
+\title{COAST: Supplementary Material}
+\author{Anonymous WACV submission\\Paper ID \paperID}
+\maketitle
+
+\section{Complete model results}
+The main paper focuses on six regression and spatial backbones for which global and local FiLM form
+a directly matched intervention. For transparency, this appendix reports every evaluated architecture,
+including the neutral TRIPLEX result and the negative BLEEP result. No model was removed from the
+experimental record.
+
+\begin{table*}[t]
+\centering\small
+\setlength{\tabcolsep}{4.2pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+& \multicolumn{4}{c}{LOOO} & \multicolumn{4}{c}{POOLED}\\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+Backbone & None & Global & Local & Best $\Delta$ & None & Global & Local & Best $\Delta$\\
+\midrule
+ST-Net & .3588 & .3493 & \textbf{.3969} & +.0380 & .4169 & .3286 & \textbf{.5886} & +.1717\\
+DeepSpaCE & .4521 & .4590 & \textbf{.4672} & +.0151 & .7834 & .7890 & \textbf{.7908} & +.0074\\
+HisToGene & .4384 & \textbf{.4526} & .4522 & +.0142 & .7775 & .7830 & \textbf{.7881} & +.0106\\
+Hist2ST & .4126 & .4147 & \textbf{.4183} & +.0057 & .7659 & .7697 & \textbf{.7702} & +.0043\\
+MLP probe & .4530 & \textbf{.4589} & .4588 & +.0059 & .7871 & .7878 & \textbf{.7930} & +.0059\\
+Gene-DML-style$^\dagger$ & .4527 & \textbf{.4597} & .4576 & +.0070 & .7856 & \textbf{.7892} & .7852 & +.0036\\
+TRIPLEX & \textbf{.4639} & .4610 & .4619 & -.0020 & .7909 & .7922 & \textbf{.7932} & +.0023\\
+BLEEP & \textbf{.4255} & .4161 & -- & -.0093 & \textbf{.7722} & .7696 & -- & -.0027\\
+\bottomrule
+\end{tabular}
+\caption{Complete HEST cross-architecture conditioning screening (three-seed means). Bold marks the
+best variant within each backbone and regime. BLEEP has no compatible local intervention.
+$^\dagger$Feature-matched COAST adaptation of Gene-DML; LOOO None and POOLED Local contain two seeds,
+and the remaining Gene-DML cells contain three.}
+\label{tab:all_film}
+\end{table*}
+
+\paragraph{Paired tests.}
+Wilcoxon tests on paired fold--seed values for the best LOOO variant give $p<10^{-4}$ for ST-Net and
+DeepSpaCE, $p=0.0002$ for HisToGene, $p=0.074$ for Hist2ST, $p=0.032$ for the MLP probe, and
+$p=0.390$ for TRIPLEX. BLEEP's global intervention decreases performance ($p=0.016$). These
+preliminary values must be confirmed using validation-selected checkpoints before submission.
+
+\paragraph{Recent-baseline execution status.}
+We additionally integrated the official Gene-DML~\cite{genedml} and FEAST~\cite{feast} code releases.
+Because COAST fixes UNI embeddings and fold-specific 50-gene panels, the reported Gene-DML-style row
+retains its spot, neighborhood, and global streams with transformer fusion and auxiliary stream-wise
+regression, but does not claim an end-to-end reproduction of the original system. FEAST results are
+not reported: dense attention exceeded GPU memory for several large slides, and other runs produced
+undefined validation correlations. Omitting those numbers avoids converting an engineering failure
+into an apparent scientific comparison. Memory-safe FEAST reruns remain required for the final version.
+
+\section{Complete unconditioned benchmark}
+The final appendix will additionally contain the full HEST and STImage-1K4M model tables, per-organ
+scores, per-seed results, alternative metrics, confidence intervals, and threshold-sensitivity curves.
+This separation keeps the main paper focused while preserving all comparisons needed for audit.
+
+{\footnotesize
+\bibliographystyle{ieeenat_fullname}
+\bibliography{references}
+}
+
+\end{document}

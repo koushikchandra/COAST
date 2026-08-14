@@ -1,0 +1,19 @@
+\begin{abstract}
+Models that predict spatial gene expression from H\&E images are usually tested on new patients from
+an organ seen during training. This does not tell us whether they work on a new organ. We present
+\coast{}, a controlled benchmark for this harder setting. \coast{} separates prediction for new
+patients from known organs from transfer to a completely unseen organ. It uses patient-disjoint
+splits, selects genes from training data only, and gives every method the same frozen image features,
+gene panels, and metrics. Across HEST-1k and STImage-1K4M, all model families perform substantially
+worse when the test organ is unseen. We also find that Pearson correlation can become uninformative:
+some training-selected genes are almost silent in the test organ, leaving too little target variation
+to measure correlation reliably. Finally, we add the same inference-available morphology conditioner
+to six representative regression and spatial architectures, including a recent Gene-DML-style
+multi-level predictor. It improves all six in both evaluation
+settings, with the largest gains for models that do not already combine local and slide-level context.
+The gain persists on the recent model and is largest under organ shift. Additional architecture
+screening, including neutral and negative cases, is reported in the appendix.
+Thus, FiLM is useful across several prediction families, but its benefit depends on the information
+already present in a model. \coast{} turns cross-organ generalization from
+an implicit claim into a reproducible test. We will release the splits, panels, predictions, and code.
+\end{abstract}

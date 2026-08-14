@@ -1,0 +1,62 @@
+\section{What the benchmark teaches us}
+\label{sec:discussion}
+\paragraph{New patients and new organs are different tests.}
+Within-organ, pooled-patient, and unseen-organ evaluation answer different questions. The preliminary
+results show a large transfer gap and organ-dependent model rankings, so a pooled score should not be
+used as evidence of organ generalization. Training-only panel ranking closes one source of test
+information but introduces a real deployment difficulty: targets useful in training organs may be
+weakly expressed elsewhere. That difficulty should be measured rather than hidden by test-informed
+selection.
+
+\paragraph{Accuracy needs biological context.}
+Pearson correlation remains informative when expression varies sufficiently across spots. It becomes
+unstable as target variance approaches zero, and excluding undefined correlations alone does not solve
+the problem. We therefore advocate a bundle of evidence: per-organ PCC, rank and error metrics,
+detection performance, target variance, evaluable-gene counts, and uncertainty. Detection-aware
+rescoring is a diagnostic view of model behavior on measurable targets, not a replacement primary
+metric and not evidence that low scores are solely metric artifacts.
+
+\paragraph{FiLM helps, but not everywhere.}
+Morphology conditioning improves all six representative backbones in the main study in both regimes,
+including a strong MLP probe, so its effect is not STFlow-specific. The complete appendix screening
+also contains neutral and negative cases. The evidence thus
+suggests an architectural hypothesis---repeated morphology injection helps when contextual aggregation
+is missing---rather than proving it or supporting the overbroad claim that FiLM always helps. STFlow does not dominate every
+baseline or organ, and its local conditioner is not significantly better than the global version.
+Cross-organ transfer therefore remains open.
+
+\paragraph{Why the benchmark and intervention belong together.}
+A benchmark is most useful when it can do more than rank methods. COAST first exposes a failure under
+organ shift, then uses a matched intervention to ask what information helps repair that failure. The
+answer is not a universal winner: morphology conditioning improves several different predictors,
+while the complete screening shows where it should be redesigned. This combination of stress test and
+controlled change is the central contribution promised by the title.
+
+\paragraph{Limitations.}
+HEST is imbalanced and contains organs represented by only two slides; STImage slides are strongly
+downsampled. Platform and organ are partly confounded in HEST. Frozen UNI features isolate downstream
+models but do not measure encoder adaptation. STFlow restricts evaluation to 50 genes. Finally, the
+numerical tables in this working draft use optimistic checkpoint selection and are not submission-ready;
+all headline results must be rerun with the fixed validation protocol. Our Gene-DML result uses a
+feature-matched downstream adaptation rather than the complete original training pipeline, and two
+cells currently contain only two seeds. FEAST could not yet be compared reliably: its dense spatial
+attention exceeded available GPU memory on large slides and several runs became numerically invalid.
+These are unresolved experiments, not negative results; the final paper must include memory-safe,
+validation-selected reruns and distinguish faithful reproductions from COAST-compatible adaptations.
+
+\paragraph{A simple reporting standard.}
+Future cross-organ studies should disclose patient and organ boundaries; construct targets without
+held-out expression; separate known-organ and unseen-organ results; report macro and per-organ scores;
+include target detectability and variance; use multiple complementary metrics and uncertainty; and
+release fold-level predictions. These practices make evaluation assumptions auditable and comparisons
+extensible.
+
+\section{Conclusion}
+Histology-to-ST prediction should be evaluated not only by within-cohort correlation, but under explicit
+organ shift, leakage-controlled panel construction, and metrics that remain interpretable for sparse
+targets. \coast{} provides such a protocol and exposes both a substantial cross-organ generalization
+gap and a detectability-dependent limitation of Pearson correlation. A matched intervention across
+six representative architectures shows that morphology conditioning can help different predictor
+families; complete screening confirms that it is not universal. The benchmark remains far from solved. Releasing the
+partitions, panels, predictions, and evaluator can turn cross-organ generalization from an implicit
+claim into a reproducible test.
