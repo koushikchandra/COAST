@@ -1,0 +1,2 @@
+sample_id,patches_path,expr_path
+TOY02,TOY_ORGAN/patches/TOY02.h5,TOY_ORGAN/adata/TOY02.h5ad

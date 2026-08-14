@@ -9,6 +9,10 @@ weights_root/
 *.log
 *.npy
 
+# Exception: toy sample dataset is small enough to commit
+!sample_data/
+!sample_data/**
+
 # HuggingFace / Overleaf tokens
 .hf/
 .overleaf/
