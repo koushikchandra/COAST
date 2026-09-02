@@ -544,6 +544,10 @@ def build_model(args, n_genes):
         return MLPProbeNet(args.feature_dim, args.dim, n_genes, args.depth, args.dropout)
     if args.model == "triplex":
         return TriplexNet(args.feature_dim, args.dim, args.heads, args.depth, n_genes, args.dropout)
+    if args.model.startswith("mmbiomor"):
+        from mmbiomor.model import build_variant
+        return build_variant(args.model, args.feature_dim, args.dim, args.depth,
+                             args.heads, n_genes, args.dropout)
     raise ValueError(f"unknown model {args.model}")
 
 
@@ -577,6 +581,11 @@ def regression_loss(pred, target, corr_weight):
 
 def train_fold(args, train_slides, val_slides, test_slides, gene_list, device, fold_dir=None):
     model = build_model(args, len(gene_list)).to(device)
+    if hasattr(model, "set_bio_graph"):
+        # install the leakage-safe co-expression gene graph from TRAIN spots only
+        from mmbiomor.bio_graph import build_coexpr_operator
+        op, pr = build_coexpr_operator([s["labels"].numpy() for s in train_slides], len(gene_list))
+        model.set_bio_graph(op.to(device), pr.to(device))
     opt = torch.optim.Adam(model.parameters(), lr=args.lr)
     best_pearson, best_state, early = -1, None, 0
     order = list(range(len(train_slides)))
@@ -740,7 +749,9 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--model", required=True,
                    choices=["histogene", "hist2st", "stnet", "deepspace", "mlpprobe", "triplex", "bleep",
-                            "mctogene", "hist", "histogpa", "genedml", "hyperst"])
+                            "mctogene", "hist", "histogpa", "genedml", "hyperst",
+                            "mmbiomor", "mmbiomor_full", "mmbiomor_nomod", "mmbiomor_nograph",
+                            "mmbiomor_noprior", "mmbiomor_nobio", "mmbiomor_fixed", "mmbiomor_norec"])
     p.add_argument("--regime", required=True, choices=["POOLED", "LOOO", "INTRA"])
     p.add_argument("--seed", type=int, default=1)
     p.add_argument("--splits_root", default="cross_organ_splits8")

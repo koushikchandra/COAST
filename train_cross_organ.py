@@ -21,6 +21,13 @@ from operator import itemgetter
 import numpy as np
 import pandas as pd
 import torch
+# Prefer MAGMA for linalg: torch 2.10's cusolver batched eigh regresses on the
+# STFlow equivariant-frame covariances on some nova GPUs (fa.py has a CPU
+# fallback as backstop). No-op if MAGMA is unavailable.
+try:
+    torch.backends.cuda.preferred_linalg_library("magma")
+except Exception:
+    pass
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm

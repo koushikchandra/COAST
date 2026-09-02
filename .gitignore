@@ -38,3 +38,9 @@ __pycache__/
 # Editors
 .vscode/
 *.swp
+
+# environment symlinks (do not commit)
+cross_organ_splits8
+STFlow
+MorphoST/__pycache__/
+mmbiomor/__pycache__/
