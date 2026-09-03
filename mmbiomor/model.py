@@ -25,6 +25,8 @@ Forward contract matches COAST's ``baseline_spatial.py`` harness:
 regularizers); labels themselves are unused by the model.
 """
 
+import os
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -211,6 +213,12 @@ class MMBiomorNet(nn.Module):
         # biological gene-identity tokens (modality 2)
         self.gene_ident = nn.Parameter(torch.randn(n_genes, dim) * 0.02)
         self.inject = BioInject(dim, mode=bio_mode)
+        # capacity funnel is tunable via env MMB_CAPACITY="1,0.75,0.75,0.75"
+        # (bioMoR's default = keep-all then 0.75 floor; gentler suits pooling).
+        cap_env = os.environ.get("MMB_CAPACITY")
+        if cap_env:
+            capacity = tuple(float(x) for x in cap_env.split(","))
+        self.capacity = capacity
         self.stack = RecursiveStack(dim, heads, depth, dropout, share_weights,
                                     capacity, recursion=recursion)
         self.head = nn.Linear(dim, 1)
