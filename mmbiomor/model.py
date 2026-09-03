@@ -93,19 +93,19 @@ class ExpertChoiceRouter(nn.Module):
                 logits = logits + prior_weight * prior.unsqueeze(0)    # [B, M]
             z_loss = z_loss + (logits ** 2).mean()
             logits = logits.masked_fill(~cand, float("-inf"))
-            avail = int(cand[0].sum().item())                          # uniform across batch
-            k = min(avail, max(1, int(round(self.capacity[t] * M))))
+            k = min(M, max(1, int(round(self.capacity[t] * M))))
             topk = logits.topk(k, dim=1).indices                       # [B, k]
-            # COMPUTE-OPTIMIZED expert-choice: gather the k survivors and run the
-            # shared block ONLY on them (attention over the working set), then
-            # scatter back -- realizes the capacity-funnel FLOP savings (not a mask).
-            idx = topk.unsqueeze(-1).expand(B, k, d)                   # [B, k, d]
-            sub = torch.gather(tokens, 1, idx)                        # [B, k, d]
-            sub_up = block(t, sub)                                     # block on k <= M tokens
-            tokens = tokens.scatter(1, idx, sub_up)                    # write survivors back
             keep = torch.zeros_like(cand)
             keep.scatter_(1, topk, True)
             keep = keep & cand
+            # Mask-based keep-priority: run the block over the FULL token set (every
+            # token keeps full attention context) but only *update* the survivors.
+            # At M=50 tokens the FLOP saving from gathering survivors is marginal and
+            # empirically hurt accuracy (deeper steps lost context), so we keep full
+            # context here -- parameter-efficient (one shared block) without the loss.
+            updated = block(t, tokens)                                 # [B, M, d]
+            gate = keep.unsqueeze(-1).float()
+            tokens = tokens + gate * (updated - tokens)                # update survivors only
             depth_count = depth_count + keep.float()
             cand = keep
         info = {"depth_per_token": depth_count, "z_loss": z_loss / max(1, self.depth)}
