@@ -93,14 +93,19 @@ class ExpertChoiceRouter(nn.Module):
                 logits = logits + prior_weight * prior.unsqueeze(0)    # [B, M]
             z_loss = z_loss + (logits ** 2).mean()
             logits = logits.masked_fill(~cand, float("-inf"))
-            k = min(M, max(1, int(round(self.capacity[t] * M))))
+            avail = int(cand[0].sum().item())                          # uniform across batch
+            k = min(avail, max(1, int(round(self.capacity[t] * M))))
             topk = logits.topk(k, dim=1).indices                       # [B, k]
+            # COMPUTE-OPTIMIZED expert-choice: gather the k survivors and run the
+            # shared block ONLY on them (attention over the working set), then
+            # scatter back -- realizes the capacity-funnel FLOP savings (not a mask).
+            idx = topk.unsqueeze(-1).expand(B, k, d)                   # [B, k, d]
+            sub = torch.gather(tokens, 1, idx)                        # [B, k, d]
+            sub_up = block(t, sub)                                     # block on k <= M tokens
+            tokens = tokens.scatter(1, idx, sub_up)                    # write survivors back
             keep = torch.zeros_like(cand)
             keep.scatter_(1, topk, True)
             keep = keep & cand
-            updated = block(t, tokens)                                 # [B, M, d]
-            gate = keep.unsqueeze(-1).float()
-            tokens = tokens + gate * (updated - tokens)                # update survivors only
             depth_count = depth_count + keep.float()
             cand = keep
         info = {"depth_per_token": depth_count, "z_loss": z_loss / max(1, self.depth)}
@@ -195,10 +200,14 @@ class MMBiomorNet(nn.Module):
         self.n_genes = n_genes
         self.use_graph = use_graph
         self.use_prior = use_prior
-        self.feat_proj = nn.Sequential(
-            nn.Linear(feature_dim, dim), nn.GELU(),
-            nn.Dropout(dropout), nn.LayerNorm(dim),
+        # per-spot histology encoder: input projection + a residual MLP block
+        # (the single-linear version underfit the image->expression map).
+        self.feat_in = nn.Linear(feature_dim, dim)
+        self.feat_mlp = nn.Sequential(
+            nn.LayerNorm(dim), nn.Linear(dim, 2 * dim), nn.GELU(),
+            nn.Dropout(dropout), nn.Linear(2 * dim, dim),
         )
+        self.feat_norm = nn.LayerNorm(dim)
         # biological gene-identity tokens (modality 2)
         self.gene_ident = nn.Parameter(torch.randn(n_genes, dim) * 0.02)
         self.inject = BioInject(dim, mode=bio_mode)
@@ -223,7 +232,8 @@ class MMBiomorNet(nn.Module):
 
     def forward(self, feat, gxy, adj, labels=None):
         # feat: [N, feature_dim] -> predict [N, n_genes]
-        h = self.feat_proj(feat)                                       # [N, d] per-spot histology
+        h = self.feat_in(feat)                                         # [N, d] per-spot histology
+        h = self.feat_norm(h + self.feat_mlp(h))                       # residual MLP block
         tok = self.gene_ident.unsqueeze(0).expand(feat.shape[0], -1, -1)   # [N, G, d] biology
         tok = tok + h.unsqueeze(1)                                     # multimodal fusion
         tok = self.inject(tok, self.gene_ident)                       # bio injection (film / add / none)
