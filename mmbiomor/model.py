@@ -200,14 +200,14 @@ class MMBiomorNet(nn.Module):
         self.n_genes = n_genes
         self.use_graph = use_graph
         self.use_prior = use_prior
-        # per-spot histology encoder: input projection + a residual MLP block
-        # (the single-linear version underfit the image->expression map).
-        self.feat_in = nn.Linear(feature_dim, dim)
-        self.feat_mlp = nn.Sequential(
-            nn.LayerNorm(dim), nn.Linear(dim, 2 * dim), nn.GELU(),
-            nn.Dropout(dropout), nn.Linear(2 * dim, dim),
+        # per-spot histology encoder. NOTE: a deeper residual-MLP encoder was
+        # tried and HURT (held-out-organ overfitting: POOLED 0.743 -> 0.704) --
+        # this task rewards low capacity (the best baseline is a tiny per-spot
+        # model), so we keep the lean single-projection encoder (best config).
+        self.feat_proj = nn.Sequential(
+            nn.Linear(feature_dim, dim), nn.GELU(),
+            nn.Dropout(dropout), nn.LayerNorm(dim),
         )
-        self.feat_norm = nn.LayerNorm(dim)
         # biological gene-identity tokens (modality 2)
         self.gene_ident = nn.Parameter(torch.randn(n_genes, dim) * 0.02)
         self.inject = BioInject(dim, mode=bio_mode)
@@ -232,8 +232,7 @@ class MMBiomorNet(nn.Module):
 
     def forward(self, feat, gxy, adj, labels=None):
         # feat: [N, feature_dim] -> predict [N, n_genes]
-        h = self.feat_in(feat)                                         # [N, d] per-spot histology
-        h = self.feat_norm(h + self.feat_mlp(h))                       # residual MLP block
+        h = self.feat_proj(feat)                                       # [N, d] per-spot histology
         tok = self.gene_ident.unsqueeze(0).expand(feat.shape[0], -1, -1)   # [N, G, d] biology
         tok = tok + h.unsqueeze(1)                                     # multimodal fusion
         tok = self.inject(tok, self.gene_ident)                       # bio injection (film / add / none)
